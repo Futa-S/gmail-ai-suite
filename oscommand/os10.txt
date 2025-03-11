@@ -1,0 +1,1 @@
+/tmp/missing/semester | grep -i "last-modified" | cut -d " " -f2- > ~/last-modified.txt
