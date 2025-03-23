@@ -1,10 +1,15 @@
+import os
+import openai
 from fastapi import FastAPI
 from pydantic import BaseModel
-import openai
-import os
 
-# 環境変数から取得（入力待ちなし）
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# 👇 確認用ログ
+if openai.api_key:
+    print("✅ OpenAI API key loaded successfully.")
+else:
+    print("❌ OpenAI API key NOT loaded.")
 
 app = FastAPI()
 
