@@ -1,0 +1,11 @@
+version: '3'
+services:
+  demo-app:
+    build: .
+    env_file:
+      - .env
+    volumes:
+      - .dockervenv:/src/.venv
+      - .:/src
+    ports:
+      - 8000:8000
