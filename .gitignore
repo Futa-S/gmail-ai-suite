@@ -1,0 +1,18 @@
+# ---- Python & Poetry ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.env                         # 万一 root に置いた場合
+
+# ---- VS Code / IDE ----
+.vscode/
+.idea/
+
+# ---- Docker ----
+*.log
+
+# ---- Project Secrets ----
+gmail-ai-suite/backend/.env
