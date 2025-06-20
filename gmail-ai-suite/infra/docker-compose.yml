@@ -1,6 +1,6 @@
 version: '3'
 
-services:                         # ← ★ ここが必須 ★
+services:
   # ------------------------------- 
   # Cloud SQL Auth Proxy
   # -------------------------------
@@ -20,15 +20,17 @@ services:                         # ← ★ ここが必須 ★
   # -------------------------------
   demo-app:
     build:
+      # ① backend フォルダだけでなく **プロジェクトルート全体** を渡す
       context: ../backend
+      # ② Dockerfile の位置を相対で指定
       dockerfile: Dockerfile
     env_file:
-      - ../backend/.env.local
+      - ../backend/.env.local      # ← ここは変更なし
     depends_on:
       - cloud-sql-proxy
     volumes:
-      - .dockervenv:/src/.venv
-      - .:/src
+      - .dockervenv:/src/.venv     # VSCode Dev Container 用（変更なし）
+      - .:/src                     # 開発マウント（変更なし）
     environment:
       DB_HOST: cloud-sql-proxy
     ports:
