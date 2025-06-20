@@ -1,0 +1,580 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Python バージョン: 3.13.2 (main, Feb 25 2025, 05:25:21) [GCC 12.2.0]\n",
+      "Requirement already satisfied: llama-index in /usr/local/lib/python3.13/site-packages (0.12.24)\n",
+      "Requirement already satisfied: pymupdf in /usr/local/lib/python3.13/site-packages (1.25.4)\n",
+      "Requirement already satisfied: pandas in /usr/local/lib/python3.13/site-packages (2.2.3)\n",
+      "Requirement already satisfied: openai in /usr/local/lib/python3.13/site-packages (1.66.0)\n",
+      "Requirement already satisfied: llama-index-agent-openai<0.5.0,>=0.4.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.4.6)\n",
+      "Requirement already satisfied: llama-index-cli<0.5.0,>=0.4.1 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.4.1)\n",
+      "Requirement already satisfied: llama-index-core<0.13.0,>=0.12.24 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.12.24.post1)\n",
+      "Requirement already satisfied: llama-index-embeddings-openai<0.4.0,>=0.3.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.3.1)\n",
+      "Requirement already satisfied: llama-index-indices-managed-llama-cloud>=0.4.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.6.9)\n",
+      "Requirement already satisfied: llama-index-llms-openai<0.4.0,>=0.3.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.3.25)\n",
+      "Requirement already satisfied: llama-index-multi-modal-llms-openai<0.5.0,>=0.4.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.4.3)\n",
+      "Requirement already satisfied: llama-index-program-openai<0.4.0,>=0.3.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.3.1)\n",
+      "Requirement already satisfied: llama-index-question-gen-openai<0.4.0,>=0.3.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.3.0)\n",
+      "Requirement already satisfied: llama-index-readers-file<0.5.0,>=0.4.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.4.6)\n",
+      "Requirement already satisfied: llama-index-readers-llama-parse>=0.4.0 in /usr/local/lib/python3.13/site-packages (from llama-index) (0.4.0)\n",
+      "Requirement already satisfied: nltk>3.8.1 in /usr/local/lib/python3.13/site-packages (from llama-index) (3.9.1)\n",
+      "Requirement already satisfied: numpy>=1.26.0 in /usr/local/lib/python3.13/site-packages (from pandas) (2.2.3)\n",
+      "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.13/site-packages (from pandas) (2.9.0.post0)\n",
+      "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.13/site-packages (from pandas) (2025.1)\n",
+      "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.13/site-packages (from pandas) (2025.1)\n",
+      "Requirement already satisfied: anyio<5,>=3.5.0 in /usr/local/lib/python3.13/site-packages (from openai) (4.8.0)\n",
+      "Requirement already satisfied: distro<2,>=1.7.0 in /usr/local/lib/python3.13/site-packages (from openai) (1.9.0)\n",
+      "Requirement already satisfied: httpx<1,>=0.23.0 in /usr/local/lib/python3.13/site-packages (from openai) (0.28.1)\n",
+      "Requirement already satisfied: jiter<1,>=0.4.0 in /usr/local/lib/python3.13/site-packages (from openai) (0.9.0)\n",
+      "Requirement already satisfied: pydantic<3,>=1.9.0 in /usr/local/lib/python3.13/site-packages (from openai) (2.10.6)\n",
+      "Requirement already satisfied: sniffio in /usr/local/lib/python3.13/site-packages (from openai) (1.3.1)\n",
+      "Requirement already satisfied: tqdm>4 in /usr/local/lib/python3.13/site-packages (from openai) (4.67.1)\n",
+      "Requirement already satisfied: typing-extensions<5,>=4.11 in /usr/local/lib/python3.13/site-packages (from openai) (4.12.2)\n",
+      "Requirement already satisfied: idna>=2.8 in /usr/local/lib/python3.13/site-packages (from anyio<5,>=3.5.0->openai) (3.10)\n",
+      "Requirement already satisfied: certifi in /usr/local/lib/python3.13/site-packages (from httpx<1,>=0.23.0->openai) (2025.1.31)\n",
+      "Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.13/site-packages (from httpx<1,>=0.23.0->openai) (1.0.7)\n",
+      "Requirement already satisfied: h11<0.15,>=0.13 in /usr/local/lib/python3.13/site-packages (from httpcore==1.*->httpx<1,>=0.23.0->openai) (0.14.0)\n",
+      "Requirement already satisfied: PyYAML>=6.0.1 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (6.0.2)\n",
+      "Requirement already satisfied: SQLAlchemy>=1.4.49 in /usr/local/lib/python3.13/site-packages (from SQLAlchemy[asyncio]>=1.4.49->llama-index-core<0.13.0,>=0.12.24->llama-index) (2.0.38)\n",
+      "Requirement already satisfied: aiohttp<4.0.0,>=3.8.6 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (3.11.13)\n",
+      "Requirement already satisfied: dataclasses-json in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (0.6.7)\n",
+      "Requirement already satisfied: deprecated>=1.2.9.3 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (1.2.18)\n",
+      "Requirement already satisfied: dirtyjson<2.0.0,>=1.0.8 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (1.0.8)\n",
+      "Requirement already satisfied: filetype<2.0.0,>=1.2.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (1.2.0)\n",
+      "Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (2024.12.0)\n",
+      "Requirement already satisfied: nest-asyncio<2.0.0,>=1.5.8 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (1.6.0)\n",
+      "Requirement already satisfied: networkx>=3.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (3.4.2)\n",
+      "Requirement already satisfied: pillow>=9.0.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (11.1.0)\n",
+      "Requirement already satisfied: requests>=2.31.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (2.32.3)\n",
+      "Requirement already satisfied: tenacity!=8.4.0,<10.0.0,>=8.2.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (9.0.0)\n",
+      "Requirement already satisfied: tiktoken>=0.3.3 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (0.9.0)\n",
+      "Requirement already satisfied: typing-inspect>=0.8.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (0.9.0)\n",
+      "Requirement already satisfied: wrapt in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.24->llama-index) (1.17.2)\n",
+      "Requirement already satisfied: llama-cloud<0.2.0,>=0.1.13 in /usr/local/lib/python3.13/site-packages (from llama-index-indices-managed-llama-cloud>=0.4.0->llama-index) (0.1.14)\n",
+      "Requirement already satisfied: beautifulsoup4<5.0.0,>=4.12.3 in /usr/local/lib/python3.13/site-packages (from llama-index-readers-file<0.5.0,>=0.4.0->llama-index) (4.13.3)\n",
+      "Requirement already satisfied: pypdf<6.0.0,>=5.1.0 in /usr/local/lib/python3.13/site-packages (from llama-index-readers-file<0.5.0,>=0.4.0->llama-index) (5.4.0)\n",
+      "Requirement already satisfied: striprtf<0.0.27,>=0.0.26 in /usr/local/lib/python3.13/site-packages (from llama-index-readers-file<0.5.0,>=0.4.0->llama-index) (0.0.26)\n",
+      "Requirement already satisfied: llama-parse>=0.5.0 in /usr/local/lib/python3.13/site-packages (from llama-index-readers-llama-parse>=0.4.0->llama-index) (0.6.4.post1)\n",
+      "Requirement already satisfied: click in /usr/local/lib/python3.13/site-packages (from nltk>3.8.1->llama-index) (8.1.8)\n",
+      "Requirement already satisfied: joblib in /usr/local/lib/python3.13/site-packages (from nltk>3.8.1->llama-index) (1.4.2)\n",
+      "Requirement already satisfied: regex>=2021.8.3 in /usr/local/lib/python3.13/site-packages (from nltk>3.8.1->llama-index) (2024.11.6)\n",
+      "Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.13/site-packages (from pydantic<3,>=1.9.0->openai) (0.7.0)\n",
+      "Requirement already satisfied: pydantic-core==2.27.2 in /usr/local/lib/python3.13/site-packages (from pydantic<3,>=1.9.0->openai) (2.27.2)\n",
+      "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.13/site-packages (from python-dateutil>=2.8.2->pandas) (1.17.0)\n",
+      "Requirement already satisfied: aiohappyeyeballs>=2.3.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.24->llama-index) (2.5.0)\n",
+      "Requirement already satisfied: aiosignal>=1.1.2 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.24->llama-index) (1.3.2)\n",
+      "Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.24->llama-index) (25.1.0)\n",
+      "Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.24->llama-index) (1.5.0)\n",
+      "Requirement already satisfied: multidict<7.0,>=4.5 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.24->llama-index) (6.1.0)\n",
+      "Requirement already satisfied: propcache>=0.2.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.24->llama-index) (0.3.0)\n",
+      "Requirement already satisfied: yarl<2.0,>=1.17.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.24->llama-index) (1.18.3)\n",
+      "Requirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.13/site-packages (from beautifulsoup4<5.0.0,>=4.12.3->llama-index-readers-file<0.5.0,>=0.4.0->llama-index) (2.6)\n",
+      "Requirement already satisfied: llama-cloud-services>=0.6.4 in /usr/local/lib/python3.13/site-packages (from llama-parse>=0.5.0->llama-index-readers-llama-parse>=0.4.0->llama-index) (0.6.5)\n",
+      "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.13/site-packages (from requests>=2.31.0->llama-index-core<0.13.0,>=0.12.24->llama-index) (3.4.1)\n",
+      "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.13/site-packages (from requests>=2.31.0->llama-index-core<0.13.0,>=0.12.24->llama-index) (2.3.0)\n",
+      "Requirement already satisfied: greenlet!=0.4.17 in /usr/local/lib/python3.13/site-packages (from SQLAlchemy>=1.4.49->SQLAlchemy[asyncio]>=1.4.49->llama-index-core<0.13.0,>=0.12.24->llama-index) (3.1.1)\n",
+      "Requirement already satisfied: mypy-extensions>=0.3.0 in /usr/local/lib/python3.13/site-packages (from typing-inspect>=0.8.0->llama-index-core<0.13.0,>=0.12.24->llama-index) (1.0.0)\n",
+      "Requirement already satisfied: marshmallow<4.0.0,>=3.18.0 in /usr/local/lib/python3.13/site-packages (from dataclasses-json->llama-index-core<0.13.0,>=0.12.24->llama-index) (3.26.1)\n",
+      "Requirement already satisfied: python-dotenv<2.0.0,>=1.0.1 in /usr/local/lib/python3.13/site-packages (from llama-cloud-services>=0.6.4->llama-parse>=0.5.0->llama-index-readers-llama-parse>=0.4.0->llama-index) (1.0.1)\n",
+      "Requirement already satisfied: packaging>=17.0 in /usr/local/lib/python3.13/site-packages (from marshmallow<4.0.0,>=3.18.0->dataclasses-json->llama-index-core<0.13.0,>=0.12.24->llama-index) (24.2)\n",
+      "\u001b[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.\u001b[0m\u001b[33m\n",
+      "\u001b[0mCollecting llama-index-readers-json\n",
+      "  Downloading llama_index_readers_json-0.3.0-py3-none-any.whl.metadata (2.1 kB)\n",
+      "Requirement already satisfied: llama-index-core<0.13.0,>=0.12.0 in /usr/local/lib/python3.13/site-packages (from llama-index-readers-json) (0.12.24.post1)\n",
+      "Requirement already satisfied: PyYAML>=6.0.1 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (6.0.2)\n",
+      "Requirement already satisfied: SQLAlchemy>=1.4.49 in /usr/local/lib/python3.13/site-packages (from SQLAlchemy[asyncio]>=1.4.49->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2.0.38)\n",
+      "Requirement already satisfied: aiohttp<4.0.0,>=3.8.6 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (3.11.13)\n",
+      "Requirement already satisfied: dataclasses-json in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (0.6.7)\n",
+      "Requirement already satisfied: deprecated>=1.2.9.3 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.2.18)\n",
+      "Requirement already satisfied: dirtyjson<2.0.0,>=1.0.8 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.0.8)\n",
+      "Requirement already satisfied: filetype<2.0.0,>=1.2.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.2.0)\n",
+      "Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2024.12.0)\n",
+      "Requirement already satisfied: httpx in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (0.28.1)\n",
+      "Requirement already satisfied: nest-asyncio<2.0.0,>=1.5.8 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.6.0)\n",
+      "Requirement already satisfied: networkx>=3.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (3.4.2)\n",
+      "Requirement already satisfied: nltk>3.8.1 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (3.9.1)\n",
+      "Requirement already satisfied: numpy in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2.2.3)\n",
+      "Requirement already satisfied: pillow>=9.0.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (11.1.0)\n",
+      "Requirement already satisfied: pydantic>=2.8.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2.10.6)\n",
+      "Requirement already satisfied: requests>=2.31.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2.32.3)\n",
+      "Requirement already satisfied: tenacity!=8.4.0,<10.0.0,>=8.2.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (9.0.0)\n",
+      "Requirement already satisfied: tiktoken>=0.3.3 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (0.9.0)\n",
+      "Requirement already satisfied: tqdm<5.0.0,>=4.66.1 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (4.67.1)\n",
+      "Requirement already satisfied: typing-extensions>=4.5.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (4.12.2)\n",
+      "Requirement already satisfied: typing-inspect>=0.8.0 in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (0.9.0)\n",
+      "Requirement already satisfied: wrapt in /usr/local/lib/python3.13/site-packages (from llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.17.2)\n",
+      "Requirement already satisfied: aiohappyeyeballs>=2.3.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2.5.0)\n",
+      "Requirement already satisfied: aiosignal>=1.1.2 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.3.2)\n",
+      "Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (25.1.0)\n",
+      "Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.5.0)\n",
+      "Requirement already satisfied: multidict<7.0,>=4.5 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (6.1.0)\n",
+      "Requirement already satisfied: propcache>=0.2.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (0.3.0)\n",
+      "Requirement already satisfied: yarl<2.0,>=1.17.0 in /usr/local/lib/python3.13/site-packages (from aiohttp<4.0.0,>=3.8.6->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.18.3)\n",
+      "Requirement already satisfied: click in /usr/local/lib/python3.13/site-packages (from nltk>3.8.1->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (8.1.8)\n",
+      "Requirement already satisfied: joblib in /usr/local/lib/python3.13/site-packages (from nltk>3.8.1->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.4.2)\n",
+      "Requirement already satisfied: regex>=2021.8.3 in /usr/local/lib/python3.13/site-packages (from nltk>3.8.1->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2024.11.6)\n",
+      "Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.13/site-packages (from pydantic>=2.8.0->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (0.7.0)\n",
+      "Requirement already satisfied: pydantic-core==2.27.2 in /usr/local/lib/python3.13/site-packages (from pydantic>=2.8.0->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2.27.2)\n",
+      "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.13/site-packages (from requests>=2.31.0->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (3.4.1)\n",
+      "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.13/site-packages (from requests>=2.31.0->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (3.10)\n",
+      "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.13/site-packages (from requests>=2.31.0->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2.3.0)\n",
+      "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.13/site-packages (from requests>=2.31.0->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (2025.1.31)\n",
+      "Requirement already satisfied: greenlet!=0.4.17 in /usr/local/lib/python3.13/site-packages (from SQLAlchemy>=1.4.49->SQLAlchemy[asyncio]>=1.4.49->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (3.1.1)\n",
+      "Requirement already satisfied: mypy-extensions>=0.3.0 in /usr/local/lib/python3.13/site-packages (from typing-inspect>=0.8.0->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.0.0)\n",
+      "Requirement already satisfied: marshmallow<4.0.0,>=3.18.0 in /usr/local/lib/python3.13/site-packages (from dataclasses-json->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (3.26.1)\n",
+      "Requirement already satisfied: anyio in /usr/local/lib/python3.13/site-packages (from httpx->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (4.8.0)\n",
+      "Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.13/site-packages (from httpx->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.0.7)\n",
+      "Requirement already satisfied: h11<0.15,>=0.13 in /usr/local/lib/python3.13/site-packages (from httpcore==1.*->httpx->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (0.14.0)\n",
+      "Requirement already satisfied: packaging>=17.0 in /usr/local/lib/python3.13/site-packages (from marshmallow<4.0.0,>=3.18.0->dataclasses-json->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (24.2)\n",
+      "Requirement already satisfied: sniffio>=1.1 in /usr/local/lib/python3.13/site-packages (from anyio->httpx->llama-index-core<0.13.0,>=0.12.0->llama-index-readers-json) (1.3.1)\n",
+      "Downloading llama_index_readers_json-0.3.0-py3-none-any.whl (3.9 kB)\n",
+      "Installing collected packages: llama-index-readers-json\n",
+      "Successfully installed llama-index-readers-json-0.3.0\n",
+      "\u001b[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.\u001b[0m\u001b[33m\n",
+      "\u001b[0m\u001b[31mERROR: Could not find a version that satisfies the requirement llama-index-readers-pymupdf (from versions: none)\u001b[0m\u001b[31m\n",
+      "\u001b[0m\u001b[31mERROR: No matching distribution found for llama-index-readers-pymupdf\u001b[0m\u001b[31m\n",
+      "\u001b[0m✅ すべてのライブラリが正常にインポートされました！\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Creating json from Arrow format: 100%|██████████| 23/23 [00:00<00:00, 32.05ba/s]\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ JSONL ファイルを保存しました: JaGovFaqs-22k.jsonl\n",
+      "✅ PDF ファイルが見つかりました: /mnt/data/00zentai.pdf\n"
+     ]
+    }
+   ],
+   "source": [
+    "### 📌 1. 環境セットアップ\n",
+    "\n",
+    "# Python のバージョン確認\n",
+    "import sys\n",
+    "print(f\"Python バージョン: {sys.version}\")\n",
+    "\n",
+    "# 必要なライブラリのインストール（必要なら実行）\n",
+    "!pip install llama-index pymupdf pandas openai\n",
+    "!pip install llama-index-readers-json\n",
+    "!pip install llama-index-readers-pymupdf\n",
+    "\n",
+    "# ライブラリのインポート\n",
+    "import llama_index\n",
+    "\n",
+    "import fitz  # pymupdf\n",
+    "import pandas as pd\n",
+    "import openai\n",
+    "\n",
+    "print(\"✅ すべてのライブラリが正常にインポートされました！\")\n",
+    "\n",
+    "### 📌 2. データの準備\n",
+    "\n",
+    "# JSONL ファイルをダウンロード（すでに取得済みならスキップ）\n",
+    "from datasets import load_dataset\n",
+    "\n",
+    "dataset = load_dataset(\"matsuxr/JaGovFaqs-22k\")\n",
+    "dataset[\"train\"].to_json(\"JaGovFaqs-22k.jsonl\", orient=\"records\", lines=True)\n",
+    "print(\"✅ JSONL ファイルを保存しました: JaGovFaqs-22k.jsonl\")\n",
+    "\n",
+    "# PDF ファイルのパス（Docker 内のパス）\n",
+    "pdf_path = \"/mnt/data/00zentai.pdf\"\n",
+    "\n",
+    "# PDF が正しくマウントされているか確認\n",
+    "import os\n",
+    "if os.path.exists(pdf_path):\n",
+    "    print(f\"✅ PDF ファイルが見つかりました: {pdf_path}\")\n",
+    "else:\n",
+    "    print(f\"🚨 PDF ファイルが見つかりません: {pdf_path}\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.3.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "import importlib.metadata\n",
+    "print(importlib.metadata.version(\"llama-index-readers-json\"))\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ JSONL ファイルのドキュメント数: 22794\n",
+      "📄 最初のドキュメント: Doc ID: 8858847c-ed45-4542-9cb5-9e0e617fd490\n",
+      "Text: \"Question\": \"公共工事について会計検査院はどのように検査をしているのですか。\", \"Answer\": \"検査に当たっ\n",
+      "ては、国が行う工事や地方公共団体が国の補助金で行う工事などについて、工事に関する会計経理面だけではなく、工事の設計、積算、施工について実地に\n",
+      "赴いて検査をし、不適切な事態の是正を図っています。\\n　会計検査院では、実地に赴いて設計や工事費の積算について、基礎資料を見ながら担当者の説\n",
+      "明を聞いたり、完成した施設等について、コンクリートの強度を測定する機器や、超音波や電磁波を用いた探傷器、鉄筋探知器などの非破壊検査装置などを\n",
+      "使って、コンクリートの強度や鉄筋の位置、太さ、数などを確認したりしています。\\n　また、工事箇所になんらかの異常が認められたり、設計と相違し\n",
+      "ている...\n"
+     ]
+    }
+   ],
+   "source": [
+    "from llama_index.readers.json import JSONReader  # JSONReader を使う\n",
+    "\n",
+    "# JSONL ファイルの読み込み\n",
+    "jsonl_path = \"JaGovFaqs-22k.jsonl\"\n",
+    "jsonl_reader = JSONReader(is_jsonl=True)\n",
+    "jsonl_documents = jsonl_reader.load_data(jsonl_path)\n",
+    "\n",
+    "print(f\"✅ JSONL ファイルのドキュメント数: {len(jsonl_documents)}\")\n",
+    "print(f\"📄 最初のドキュメント: {jsonl_documents[0]}\")\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ API キーが正常に設定されました！（表示は省略）\n"
+     ]
+    }
+   ],
+   "source": [
+    "import os\n",
+    "import getpass\n",
+    "\n",
+    "# APIキーをユーザー入力で取得\n",
+    "os.environ[\"OPENAI_API_KEY\"] = getpass.getpass(\"🔑 OpenAI API Key: \")\n",
+    "\n",
+    "# ちゃんと設定されたか確認（環境変数にセットされているか）\n",
+    "if \"OPENAI_API_KEY\" in os.environ:\n",
+    "    print(\"✅ API キーが正常に設定されました！（表示は省略）\")\n",
+    "else:\n",
+    "    print(\"🚨 API キーの設定に失敗しました！\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ API キーの取得に成功！（表示は省略）\n"
+     ]
+    }
+   ],
+   "source": [
+    "import os\n",
+    "\n",
+    "# 環境変数がちゃんと設定されているか確認\n",
+    "api_key = os.getenv(\"OPENAI_API_KEY\")\n",
+    "\n",
+    "if api_key:\n",
+    "    print(\"✅ API キーの取得に成功！（表示は省略）\")\n",
+    "else:\n",
+    "    print(\"🚨 API キーが取得できませんでした！\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ OpenAI Embedding モデルのセットアップ完了！\n"
+     ]
+    }
+   ],
+   "source": [
+    "from llama_index.embeddings.openai import OpenAIEmbedding\n",
+    "\n",
+    "# OpenAI Embedding のセットアップ\n",
+    "embed_model = OpenAIEmbedding()\n",
+    "\n",
+    "print(\"✅ OpenAI Embedding モデルのセットアップ完了！\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 63,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ JSONL データを LlamaIndex にロードしました！ ドキュメント数: 22794\n"
+     ]
+    }
+   ],
+   "source": [
+    "from llama_index.core import Document\n",
+    "from llama_index.core.storage.docstore import SimpleDocumentStore\n",
+    "\n",
+    "# LlamaIndex 用のドキュメント形式に変換\n",
+    "jsonl_docs = [Document(text=str(doc)) for doc in jsonl_documents]\n",
+    "\n",
+    "# ドキュメントストアを作成\n",
+    "doc_store = SimpleDocumentStore()\n",
+    "doc_store.add_documents(jsonl_docs)\n",
+    "\n",
+    "print(f\"✅ JSONL データを LlamaIndex にロードしました！ ドキュメント数: {len(jsonl_docs)}\")\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ PDF データを LlamaIndex にロードしました！ ドキュメント数: 320\n"
+     ]
+    }
+   ],
+   "source": [
+    "# PDF データを LlamaIndex のドキュメント形式に変換\n",
+    "pdf_docs = [Document(text=str(doc)) for doc in pdf_documents]\n",
+    "\n",
+    "# JSONL データと統合\n",
+    "doc_store.add_documents(pdf_docs)\n",
+    "\n",
+    "print(f\"✅ PDF データを LlamaIndex にロードしました！ ドキュメント数: {len(pdf_docs)}\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ データのインデックス作成が完了しました！\n"
+     ]
+    }
+   ],
+   "source": [
+    "from llama_index.core import VectorStoreIndex\n",
+    "\n",
+    "# `SimpleDocumentStore` に保存したドキュメントのキーを取得し、それに基づいてドキュメントを取得\n",
+    "all_documents = [doc_store.get_document(doc_id) for doc_id in doc_store.docs.keys()]\n",
+    "\n",
+    "# インデックスを作成\n",
+    "index = VectorStoreIndex.from_documents(all_documents)\n",
+    "\n",
+    "print(\"✅ データのインデックス作成が完了しました！\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ データのインデックス作成が完了しました！\n"
+     ]
+    }
+   ],
+   "source": [
+    "from llama_index.core import VectorStoreIndex\n",
+    "\n",
+    "# すべてのドキュメントを一括取得\n",
+    "all_documents = list(doc_store.docs.values())  # `.values()` を直接リスト化する\n",
+    "\n",
+    "# インデックスを作成\n",
+    "index = VectorStoreIndex.from_documents(all_documents)\n",
+    "\n",
+    "print(\"✅ データのインデックス作成が完了しました！\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 90,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✅ クエリエンジンの作成が完了しました！\n"
+     ]
+    }
+   ],
+   "source": [
+    "from llama_index.core.retrievers import VectorIndexRetriever\n",
+    "from llama_index.core.query_engine import RetrieverQueryEngine\n",
+    "from llama_index.llms.openai import OpenAI\n",
+    "\n",
+    "llm = OpenAI(model=\"gpt-4-turbo\", system_prompt=\"あなたは日本語で詳細な回答をするAIです。質問に対してできるだけ多くの情報を提供してください。\")\n",
+    "\n",
+    "retriever = VectorIndexRetriever(index=index, similarity_top_k=10)  # 検索結果を5件取得\n",
+    "query_engine = RetrieverQueryEngine.from_args(retriever, llm=llm,  response_mode=\"tree_summarize\")\n",
+    "\n",
+    "print(\"✅ クエリエンジンの作成が完了しました！\")\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 99,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "❓ 質問: 環境省の電力事業に関する取り組みを教えて下さい\n",
+      "💬 回答: 環境省は、2030年度までに民生部門（家庭部門及び業務その他部門）の電力消費に伴うCO2排出の実質ゼロを目指しています。この目標達成のために、具体的な計画を作成し、事業実施を進めているとされています。また、「地域脱炭素の推進のための交付金」を通じて、地域ごとの脱炭素化を支援しており、この交付金の交付期間は概ね5年程度です。\n",
+      "\n",
+      "さらに、環境省は脱炭素先行地域内での再生可能エネルギーの導入を推進しており、地域内で発電される再エネ電力量の割合を可能な限り高くすることを目指しています。これにより、エネルギー代金の循環や雇用創出など、地域経済の活性化にも寄与することを期待しています。\n",
+      "\n",
+      "これらの取り組みは、環境省が推進する電力事業における主要な方針であり、持続可能な社会の実現に向けた重要なステップとなっています。\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 質問を投げてみる\n",
+    "query = \"環境省の電力事業に関する取り組みを教えて下さい\"\n",
+    "response = query_engine.query(query)\n",
+    "\n",
+    "# 結果を表示\n",
+    "print(f\"❓ 質問: {query}\")\n",
+    "print(f\"💬 回答: {response}\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 96,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🔍 取得されたドキュメント内容:\n",
+      "📄 ノード 1: Doc ID: 8853f289-b68e-4454-8810-b358d743deda\n",
+      "Text: \"Question\": \"いざというとき海上自衛隊はどういう活動をするの？\", \"Answer\": \"海上自衛隊は、我が国周辺海\n",
+      "域の防衛と海上交通の安全確保のために、作戦用艦艇約120隻、作戦用航空機約200機などを保有し、海上における哨戒、護衛、港湾及び海峡防衛のた\n",
+      "めの作戦などを行います。\\r\\n\\r\\n　自衛艦隊は、艦艇及び航空機を機動運用することによって我が国周辺全域の防衛に当たります。一方地方隊は\n",
+      "、自衛艦隊と密接に連携しながら担当する警備区域の海上防衛と後方支援に当たります。\\r\\n\\r\\n　我が国土に対する直接的な攻撃や我が国に対す\n",
+      "る海上交通の妨害の例としては、侵攻部隊の上陸、潜水艦又は航空機によるミサイル攻撃、さらには機雷の敷設や水上艦艇による攻撃などが考えられ、それ\n",
+      "らの脅...\n",
+      "📄 ノード 2: Doc ID: d4e2a9e2-f35c-4121-881b-9970549588f8\n",
+      "Text: \"Question\": \"いざというとき海上自衛隊はどういう活動をするの？\", \"Answer\": \"海上自衛隊は、我が国周辺海\n",
+      "域の防衛と海上交通の安全確保のために、作戦用艦艇約120隻、作戦用航空機約200機などを保有し、海上における哨戒、護衛、港湾及び海峡防衛のた\n",
+      "めの作戦などを行います。\\n\\n　自衛艦隊は、艦艇及び航空機を機動運用することによって我が国周辺全域の防衛に当たります。一方地方隊は、自衛艦\n",
+      "隊と密接に連携しながら担当する警備区域の海上防衛と後方支援に当たります。\\n\\n　我が国土に対する直接的な攻撃や我が国に対する海上交通の妨害\n",
+      "の例としては、侵攻部隊の上陸、潜水艦又は航空機によるミサイル攻撃、さらには機雷の敷設や水上艦艇による攻撃などが考えられ、それらの脅威の態様に\n",
+      "応じて...\n",
+      "📄 ノード 3: Doc ID: a9c5292c-3852-45f5-b1d6-fa29311bdaa1\n",
+      "Text: \"Question\": \"海上自衛隊はなんのためにあるの？\", \"Answer\":\n",
+      "\"我が国は四面を海に囲まれた島国です。これは、我が国に対する脅威が、常に海を経由してくることを意味しています。 また、資源に乏しい我が国は、\n",
+      "国民の生活基盤となる物資のほとんどを海外に依存しており、その9割以上が世界中に広がる海上輸送により運ばれています。\\r\\n\\r\\n　海上自衛\n",
+      "隊は、このような地理的・経済的特性を踏まえ、海上からの侵略に対し我が国土を防衛するとともに、我が国周辺海域における海上交通の安全を確保するこ\n",
+      "とを主任務としています。\\r\\n　また、平成7年11月に閣議決定された「防衛計画の大綱」では、新たな役割として、「大規模災害など各種の事態へ\n",
+      "の対応」及び「より安定した安全保障環境の構築への貢...\n",
+      "📄 ノード 4: Doc ID: 6e8dd38b-788d-4c11-bb33-7dd415d4f803\n",
+      "Text: \"Question\": \"どのような研修制度がありますか\", \"Answer\": \"海上保安庁の主な研修制度は以下のとおりです。\n",
+      "\\n海上保安大学校特修科海上保安学校卒業者・門司分校修了生を対象とした将来の幹部候補生を養成する研修です。一定期間現場で仕事をした後、選抜さ\n",
+      "れた職員が、初級幹部として必要な素養を身につけます\\n潜水研修海難事故が発生した場合に、転覆船舶等に取り残された方の救出や漂流者の救助等にあ\n",
+      "たる潜水士を養成する研修です。約2か月にわたる研修・訓練では、潜水業務に必要な知識・技術、転覆船を想定した救助活動等を行います。\\n語学研修\n",
+      "外国人犯罪の捜査を行うため、捜査に必要な語学の修得を行う研修です。研修修了後国際捜査官等として犯罪捜査等の業務に従事します。\\nほとんどの海\n",
+      "上...\n",
+      "📄 ノード 5: Doc ID: 9395843d-682d-414d-bf80-4c22e1e6ac47\n",
+      "Text: \"Question\": \"どのような授業がありますか\", \"Answer\":\n",
+      "\"海上保安学校は、「一般課程」「航空課程」「海洋科学課程」「管制課程」の４課程があり、それぞれ専門の授業を行っています。\",\n",
+      "\"copyright\": \"海上保安庁\", \"url\":\n",
+      "\"https://www.kaiho.mlit.go.jp/recruitment/faq/jcgs.html\"\n",
+      "📄 ノード 6: Doc ID: fae6c310-e944-4c50-8e70-366af5a8a395\n",
+      "Text: \"Question\": \"海上自衛隊はなんのためにあるの？\", \"Answer\":\n",
+      "\"我が国は四面を海に囲まれた島国です。これは、我が国に対する脅威が、常に海を経由してくることを意味しています。 また、資源に乏しい我が国は、\n",
+      "国民の生活基盤となる物資のほとんどを海外に依存しており、その9割以上が世界中に広がる海上輸送により運ばれています。\\n\\n　海上自衛隊は、こ\n",
+      "のような地理的・経済的特性を踏まえ、海上からの侵略に対し我が国土を防衛するとともに、我が国周辺海域における海上交通の安全を確保することを主任\n",
+      "務としています。\\n　また、平成7年11月に閣議決定された「防衛計画の大綱」では、新たな役割として、「大規模災害など各種の事態への対応」及び\n",
+      "「より安定した安全保障環境の構築への貢献」が加えら...\n",
+      "📄 ノード 7: Doc ID: 4de81a09-cd03-4c61-91b5-df40bf4e4517\n",
+      "Text: \"Question\": \"どのようなカリキュラムがありますか\", \"Answer\": \"海上保安庁の幹部職員を養成するため、合計\n",
+      "２年間の研修を受けることとなり、幹部海上保安官として、複雑化・国際化している海上保安業務に対応するために必要な高度な専門能力を身に付けるとと\n",
+      "もに、航海又は機関の各専攻に分かれ、海技免状を取得するために必要な海事系の専門的な知識を習得します。（１年目は、海上保安官として必要な基礎的\n",
+      "知識・技能並びに海技免状を取得するための研修。２年目は、幹部海上保安官に必要な高度の知識・技能を習得するための研修。乗船実習等も実施。）なお\n",
+      "、令和６年度以降の初任科入学生については、２年間の研修修了後は、本科生と同様、専攻科（６か月）及び研修科国際業務課程（３か月）に進み、世界一\n",
+      "周の遠...\n",
+      "📄 ノード 8: Doc ID: 7076b80d-9c2c-43a7-a426-8adfecaa432e\n",
+      "Text: \"Question\": \"どのような訓練が行われますか\", \"Answer\": \"総合指揮（基本動作、統率管理）訓練、防火訓練、\n",
+      "端艇（カッター）訓練、水泳訓練、逮捕術訓練、拳銃訓練等が実施されます。夏期休暇（夏休み）前には、海での遠泳訓練が行われ、初任科１年目に３マイ\n",
+      "ル（約５．６ｋｍ）を泳ぎます。１月には、耐寒訓練（端艇、逮捕術、長距離走）が行われます。\", \"copyright\": \"海上保安庁\",\n",
+      "\"url\": \"https://www.kaiho.mlit.go.jp/recruitment/faq/examination.html\"\n",
+      "📄 ノード 9: Doc ID: 99c670f0-1b7c-41c9-ba19-7412e8662874\n",
+      "Text: \"Question\": \"海上自衛隊ってどこにあるの？\", \"Answer\":\n",
+      "\"海上自衛隊の編成及び部隊配置、主な部隊等について、こちらをご覧ください。\", \"copyright\": \"海上自衛隊\", \"url\":\n",
+      "\"https://www.mod.go.jp/msdf/faq/\"\n",
+      "📄 ノード 10: Doc ID: 04564240-b70b-41b8-877e-c4ce23236976\n",
+      "Text: \"Question\": \"海上保安学校を卒業するとどのような仕事をするのですか\", \"Answer\": \"【一般課程（航海・機関\n",
+      "・通信・主計）】採用時に決定される配属予定管区（第一管区～第十一管区）内の巡視船艇等に配属され、その後も同一管区内の船艇や海上保安部等の陸上\n",
+      "事務所に配属されます。【一般課程（航空整備）】航空整備士を養成するコースで、全国転勤となります。学校卒業後、ヘリコプター搭載型巡視船や航空基\n",
+      "地にて約２年間の現場経験を経た後、海上保安学校宮城分校で約１年2か月の研修を受け、二等航空整備士（回転翼航空機）の資格取得を目指します。一般\n",
+      "課程の他コースのように潜水士、国際捜査官等の道に進むことは基本的にはできません。【航空課程】パイロットを養成するコースで、全国転勤です。学校\n",
+      "卒業後...\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 🔍 検索されたノードの情報を確認\n",
+    "retrieved_nodes = retriever.retrieve(\"海上自衛隊のプログラムにはどんなのがあるの\")\n",
+    "\n",
+    "print(\"🔍 取得されたドキュメント内容:\")\n",
+    "for idx, node in enumerate(retrieved_nodes):\n",
+    "    print(f\"📄 ノード {idx+1}: {node.text[:500]}\")  # 先頭500文字を表示\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
