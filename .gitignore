@@ -1,0 +1,7 @@
+
+# secrets
+backend/.env.local
+backend/client_secret.json
+backend/db_credentials.json
+infra/.env
+infra/adc.json
