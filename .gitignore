@@ -5,3 +5,7 @@ backend/client_secret.json
 backend/db_credentials.json
 infra/.env
 infra/adc.json
+
+# ignore real env files
+backend/.env
+backend/.env.prod
