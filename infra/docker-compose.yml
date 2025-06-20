@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  # ------------------------------- 
+  # Cloud SQL Auth Proxy
+  # -------------------------------
+  cloud-sql-proxy:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.10.1
+    command: >
+      --address 0.0.0.0
+      --port 5432
+      --credentials-file /config/adc.json
+      term7-futa-sato:us-central1:gmail-ai-db
+    volumes:
+      - ./adc.json:/config/adc.json:ro
+    restart: unless-stopped
+
+  # -------------------------------
+  # FastAPI アプリ
+  # -------------------------------
+  demo-app:
+    build:
+      # ① backend フォルダだけでなく **プロジェクトルート全体** を渡す
+      context: ../backend
+      # ② Dockerfile の位置を相対で指定
+      dockerfile: Dockerfile
+    env_file:
+      - ../backend/.env.local      # ← ここは変更なし
+    depends_on:
+      - cloud-sql-proxy
+    volumes:
+      - .dockervenv:/src/.venv     # VSCode Dev Container 用（変更なし）
+      - .:/src                     # 開発マウント（変更なし）
+    environment:
+      DB_HOST: cloud-sql-proxy
+    ports:
+      - "8000:8000"
